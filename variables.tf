@@ -133,3 +133,10 @@ variable "script_storage_account_key" {
   type        = string
   default     = ""
 }
+
+variable "vm_password" {
+  description = "Admin password used for Bastion or SSH password authentication."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
