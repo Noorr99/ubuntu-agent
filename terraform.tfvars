@@ -5,7 +5,7 @@ resource_group_name = "my-azure-agent-rg"
 size = "Standard_B2ms"
 
 # Provide a valid SSH key
-admin_ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ..."
+admin_ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCh0j1d7BWDySR7w7uZN56VbB4P3A84MdEP4ILVQslMCGwv9AZG080nPJwigFc1J5eG7bOGx17q1Up8OU/FfqbuK7EaQWi6RkkQ2mUuNQ282BAmd60VwrkJ4UTtVPC6BAZGCc2jMuF6gN0SnSn3jtdfWziH0Q1pP+2EqQiv/uxAXRD7mFfvcboQc/gSYvLXyUouRtayP2L/jTXVuDQpdtcZQSefeyxHM9cmRfqJe6uirLWXwyiUXUPumk6D4QFGk0Fe+tmWiNUgdjgPoALd7Y1ef7ONAqUSvD8VAN9iMDxcUAR0TMB1MhzxsZTgQ/Q30kP7LO1m1nVyP8gifgzqCkGH noor.maaita@pwc.com"
 
 # Optionally choose no public IP:
 public_ip = false
