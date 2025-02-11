@@ -71,11 +71,12 @@ variable "os_disk_image" {
   description = "OS disk image reference for the VM"
   default = {
     publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
+    offer     = "0001-com-ubuntu-desktop"
+    sku       = "22_04-lts"
     version   = "latest"
   }
 }
+
 
 variable "os_disk_storage_account_type" {
   description = "Storage account type for the OS disk."

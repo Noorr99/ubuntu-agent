@@ -101,52 +101,7 @@ resource "azurerm_network_interface_security_group_association" "nsg_association
 }
 
 #####################################
-# 6. Linux Virtual Machine
-#####################################
-/*
-resource "azurerm_linux_virtual_machine" "vm" {
-  name                          = var.name
-  location                      = azurerm_resource_group.rg.location
-  resource_group_name           = azurerm_resource_group.rg.name
-  network_interface_ids         = [azurerm_network_interface.nic.id]
-  size                          = var.size
-  computer_name                 = var.name
-  admin_username                = var.vm_user
-  tags                          = var.tags
-
-  os_disk {
-    name                 = "${var.name}-osdisk"
-    caching              = "ReadWrite"
-    storage_account_type = var.os_disk_storage_account_type
-  }
-
-  admin_ssh_key {
-    username   = var.vm_user
-    public_key = var.admin_ssh_public_key
-  }
-
-  source_image_reference {
-    publisher = lookup(var.os_disk_image, "publisher", "Canonical")
-    offer     = lookup(var.os_disk_image, "offer", "0001-com-ubuntu-server-jammy")
-    sku       = lookup(var.os_disk_image, "sku", "22_04-lts-gen2")
-    version   = lookup(var.os_disk_image, "version", "latest")
-  }
-
-  boot_diagnostics {
-    storage_account_uri = var.boot_diagnostics_storage_account == "" ? null : var.boot_diagnostics_storage_account
-  }
-
-  lifecycle {
-    ignore_changes = [
-      tags
-    ]
-  }
-}
-*/
-
-
-#####################################
-# 6. Linux Virtual Machine
+# 6. Linux Virtual Machine (Ubuntu Desktop)
 #####################################
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = var.name
@@ -157,8 +112,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   computer_name       = var.name
   admin_username      = var.vm_user
 
-  # Enable password-based authentication for Bastion
-  admin_password                    = var.vm_password
+  # Enable password-based authentication (for Bastion, etc.)
+  admin_password                   = var.vm_password
   disable_password_authentication  = false
 
   tags = var.tags
@@ -169,7 +124,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
     storage_account_type = var.os_disk_storage_account_type
   }
 
-  # If you also want SSH key authentication, keep this block
+  # Optional: retain SSH key authentication if desired
   admin_ssh_key {
     username   = var.vm_user
     public_key = var.admin_ssh_public_key
@@ -177,8 +132,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
   source_image_reference {
     publisher = lookup(var.os_disk_image, "publisher", "Canonical")
-    offer     = lookup(var.os_disk_image, "offer", "0001-com-ubuntu-server-jammy")
-    sku       = lookup(var.os_disk_image, "sku", "22_04-lts-gen2")
+    offer     = lookup(var.os_disk_image, "offer", "0001-com-ubuntu-desktop")
+    sku       = lookup(var.os_disk_image, "sku", "22_04-lts")
     version   = lookup(var.os_disk_image, "version", "latest")
   }
 
@@ -193,31 +148,25 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 }
 
-
 #####################################
 # 7. Custom Script Extension
 #####################################
 resource "azurerm_virtual_machine_extension" "agent_setup" {
-  name                 = "${var.name}-customscript"
-  virtual_machine_id   = azurerm_linux_virtual_machine.vm.id
-  publisher            = "Microsoft.Azure.Extensions"
-  type                 = "CustomScript"
-  type_handler_version = "2.0"
+  name               = "${var.name}-customscript"
+  virtual_machine_id = azurerm_linux_virtual_machine.vm.id
+  publisher          = "Microsoft.Azure.Extensions"
+  type               = "CustomScript"
+  type_handler_version = "2.1"
 
-  settings = <<SETTINGS
-    {
-      "fileUris": ["${var.script_sas_url}"],
-      "commandToExecute": "bash configure-agent.sh '${var.vm_user}' '${var.azure_devops_url}' '${var.azure_devops_pat}' '${var.azure_devops_agent_pool_name}'"
-    }
-  SETTINGS
+  settings = jsonencode({
+    fileUris         = [var.script_sas_url],
+    commandToExecute = "bash configure-agent.sh ${var.vm_user} ${var.azure_devops_url} ${var.azure_devops_pat} ${var.azure_devops_agent_pool_name}"
+  })
 
-  # Only required if your blob container is private and needs account/key auth
-  protected_settings = <<PROTECTED_SETTINGS
-    {
-      "storageAccountName": "${var.script_storage_account_name}",
-      "storageAccountKey":  "${var.script_storage_account_key}"
-    }
-  PROTECTED_SETTINGS
+  protected_settings = jsonencode({
+    storageAccountName = var.script_storage_account_name,
+    storageAccountKey  = var.script_storage_account_key
+  })
 
   lifecycle {
     ignore_changes = [
